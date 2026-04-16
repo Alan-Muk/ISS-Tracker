@@ -1,0 +1,23 @@
+# Rust
+target/
+**/target/
+
+# WASM / Trunk
+dist/
+pkg/
+
+# Node (if any JS tooling exists)
+node_modules/
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment files
+.env
