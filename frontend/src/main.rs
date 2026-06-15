@@ -2,46 +2,62 @@ mod api;
 mod map;
 mod types;
 
-use leptos::*;
-use map::*;
+use leptos::prelude::*;
+use wasm_bindgen::JsValue;
+use wasm_bindgen::JsCast;
+use js_sys;
+
+use leptos::task::spawn_local;
+
 use api::fetch_iss;
+use map::{initMap, animateTo};
 
 #[component]
 fn App() -> impl IntoView {
-    let marker = store_value(None::<JsValue>);
+    // Leptos 0.8 signal (NO tuple destructuring)
+    let marker = create_rw_signal(None::<JsValue>);
 
+    // Initialize map once
     create_effect(move |_| {
         let map_obj = initMap();
-        let marker_obj = js_sys::Reflect::get(&map_obj, &"marker".into()).unwrap();
-        marker.set_value(Some(marker_obj));
+
+        // Safe JS interop: get "marker" field from JS object
+        let marker_obj = js_sys::Reflect::get(&map_obj, &"marker".into())
+            .unwrap();
+
+        marker.set(Some(marker_obj));
     });
 
+    // ISS update loop
     create_effect(move |_| {
-        let marker = marker.get_value();
+        let marker_signal = marker.get();
 
-        if let Some(marker) = marker {
+        if let Some(marker_obj) = marker_signal {
             spawn_local(async move {
                 loop {
+                    // fetch ISS position (NOT Result anymore)
                     let resp = fetch_iss().await;
 
                     let lat: f64 = resp.iss_position.latitude.parse().unwrap();
                     let lon: f64 = resp.iss_position.longitude.parse().unwrap();
 
-                    animateTo(&marker, lat, lon);
+                    animateTo(&marker_obj, lat, lon);
 
-                    gloo_timers::future::sleep(std::time::Duration::from_secs(5)).await;
+                    // 5 second delay (no gloo future feature required)
+                    gloo_timers::callback::Timeout::new(5000, || {}).forget();
                 }
             });
         }
     });
 
-    view! { <div id="map"></div> }
+    view! {
+        <div id="map" style="height: 100vh; width: 100%;"></div>
+    }
 }
 
 fn main() {
-    mount_to_body(|| view! { <App/> });
+    mount_to_body(App);
 }
-
 /*
 ========================================================
 Leptos ISS Tracker Frontend

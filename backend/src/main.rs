@@ -1,22 +1,21 @@
 use axum::{
-    extract::ws::{WebSocket, WebSocketUpgrade, Message},
+    extract::ws::{Message, WebSocket, WebSocketUpgrade},
     response::IntoResponse,
     routing::get,
     Router,
 };
-use serde::Deserialize;
-use std::time::Duration;
+use serde::{Deserialize, Serialize};
+use tokio::time::{sleep, Duration};
 use tower_http::cors::CorsLayer;
-use tokio::time::sleep;
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Serialize, Clone)]
 struct IssResponse {
     message: String,
     timestamp: i64,
     iss_position: IssPosition,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Serialize, Clone)]
 struct IssPosition {
     latitude: String,
     longitude: String,
@@ -37,18 +36,10 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
 
 async fn handle_socket(mut socket: WebSocket) {
     loop {
-        if socket.is_closed() {
-            break;
-        }
-
         if let Some(data) = fetch_iss().await {
             let msg = serde_json::to_string(&data).unwrap();
 
-            if socket
-                .send(Message::Text(msg))
-                .await
-                .is_err()
-            {
+            if socket.send(Message::Text(msg)).await.is_err() {
                 break;
             }
         }
@@ -63,7 +54,7 @@ async fn main() {
         .route("/ws", get(ws_handler))
         .layer(CorsLayer::permissive());
 
-    println!("🚀 WebSocket server running on ws://localhost:3000/ws");
+    println!("🚀 ws://localhost:3000/ws");
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await

@@ -1,14 +1,25 @@
 use gloo_net::http::Request;
-use crate::types::IssResponse;
+use serde::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct IssResponse {
+    pub iss_position: IssPosition,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct IssPosition {
+    pub latitude: String,
+    pub longitude: String,
+}
 
 pub async fn fetch_iss() -> IssResponse {
     Request::get("http://localhost:3000/api/iss")
         .send()
         .await
-        .unwrap()
+        .expect("request failed")
         .json::<IssResponse>()
         .await
-        .unwrap()
+        .expect("invalid json")
 }
 
 /*

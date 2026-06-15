@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsValue;
 
 #[wasm_bindgen(module = "/src/map.js")]
 extern "C" {
