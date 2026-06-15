@@ -1,52 +1,81 @@
-mod api;
 mod map;
 mod types;
 
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::JsCast;
+use web_sys::{WebSocket, MessageEvent};
+
 use leptos::prelude::*;
 use wasm_bindgen::JsValue;
-use wasm_bindgen::JsCast;
 use js_sys;
+use serde::Deserialize;
 
-use leptos::task::spawn_local;
+use crate::map::{initMap, animateTo};
 
-use api::fetch_iss;
-use map::{initMap, animateTo};
+#[derive(Clone, Debug, Deserialize)]
+struct IssResponse {
+    iss_position: IssPosition,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct IssPosition {
+    latitude: String,
+    longitude: String,
+}
 
 #[component]
 fn App() -> impl IntoView {
-    // Leptos 0.8 signal (NO tuple destructuring)
     let marker = create_rw_signal(None::<JsValue>);
 
     // Initialize map once
     create_effect(move |_| {
         let map_obj = initMap();
 
-        // Safe JS interop: get "marker" field from JS object
         let marker_obj = js_sys::Reflect::get(&map_obj, &"marker".into())
             .unwrap();
 
         marker.set(Some(marker_obj));
     });
 
-    // ISS update loop
+    // WebSocket connection
     create_effect(move |_| {
         let marker_signal = marker.get();
 
         if let Some(marker_obj) = marker_signal {
-            spawn_local(async move {
-                loop {
-                    // fetch ISS position (NOT Result anymore)
-                    let resp = fetch_iss().await;
+            let window = web_sys::window().unwrap();
+            let location = window.location();
 
-                    let lat: f64 = resp.iss_position.latitude.parse().unwrap();
-                    let lon: f64 = resp.iss_position.longitude.parse().unwrap();
+            let protocol = if location.protocol().unwrap() == "https:" {
+                "wss"
+            } else {
+                "ws"
+            };
 
-                    animateTo(&marker_obj, lat, lon);
+            let host = location.host().unwrap();
+            let url = format!("{protocol}://{host}/ws");
 
-                    // 5 second delay (no gloo future feature required)
-                    gloo_timers::callback::Timeout::new(5000, || {}).forget();
-                }
-            });
+            let ws = WebSocket::new(&url).unwrap();
+
+            let onmessage = {
+                let marker_obj = marker_obj.clone();
+
+                Closure::<dyn FnMut(MessageEvent)>::new(move |msg: MessageEvent| {
+                    if let Ok(text) = msg.data().dyn_into::<js_sys::JsString>() {
+                        let parsed: Result<IssResponse, _> =
+                            serde_json::from_str(&String::from(text));
+
+                        if let Ok(data) = parsed {
+                            let lat: f64 = data.iss_position.latitude.parse().unwrap();
+                            let lon: f64 = data.iss_position.longitude.parse().unwrap();
+
+                            animateTo(&marker_obj, lat, lon);
+                        }
+                    }
+                })
+            };
+
+            ws.set_onmessage(Some(onmessage.as_ref().unchecked_ref()));
+            onmessage.forget();
         }
     });
 

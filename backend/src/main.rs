@@ -37,7 +37,10 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
 async fn handle_socket(mut socket: WebSocket) {
     loop {
         if let Some(data) = fetch_iss().await {
-            let msg = serde_json::to_string(&data).unwrap();
+            let msg = match serde_json::to_string(&data) {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
 
             if socket.send(Message::Text(msg)).await.is_err() {
                 break;
@@ -54,15 +57,21 @@ async fn main() {
         .route("/ws", get(ws_handler))
         .layer(CorsLayer::permissive());
 
-    println!("🚀 ws://localhost:3000/ws");
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string());
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+    let addr = format!("0.0.0.0:{port}");
+
+    println!("🚀 WebSocket server running on ws://{addr}/ws");
+
+    let listener = tokio::net::TcpListener::bind(&addr)
         .await
-        .unwrap();
+        .expect("failed to bind address");
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .await
+        .expect("server failed");
 }
-
 /*
 ========================================================
 ISS WebSocket Server Overview

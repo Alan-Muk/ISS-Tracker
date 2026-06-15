@@ -5,9 +5,17 @@ edition = "2024"
 
 [dependencies]
 leptos = { version = "0.8.17", features = ["csr"] }
+
 wasm-bindgen = "0.2.118"
 js-sys = "0.3"
-gloo-timers = "0.3"
-gloo-net = "0.7"
+
+web-sys = { version = "0.3", features = [
+  "Window",
+  "Location",
+  "WebSocket",
+  "MessageEvent",
+  "BinaryType"
+] }
+
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
