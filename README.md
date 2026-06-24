@@ -1,5 +1,5 @@
 
- Features
+# Features
 
 -  Live ISS position tracking
 -  Interactive world map (Leaflet)
@@ -10,7 +10,7 @@
 
 ---
 
- Architecture
+# Architecture
 
 Frontend (Rust WASM + Leaflet)
 ↓ WebSocket
@@ -22,7 +22,7 @@ Open Notify API
 
 ---
 
- Tech Stack
+# Tech Stack
 
 Backend
 - Rust
