@@ -1,5 +1,12 @@
 # ISS Tracker
 
+![Rust](https://img.shields.io/badge/Rust-1.89-000000?logo=rust)
+![Axum](https://img.shields.io/badge/Axum-Web_Server-000000)
+![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-654FF0?logo=webassembly)
+![WebSockets](https://img.shields.io/badge/Protocol-WebSockets-blue)
+![Leaflet](https://img.shields.io/badge/Leaflet-Interactive_Map-199900?logo=leaflet)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 A real-time International Space Station (ISS) tracking application built with Rust and WebAssembly.
 The system streams live ISS position updates and visualizes them on an interactive world map with smooth animations and orbital tracking.
 
