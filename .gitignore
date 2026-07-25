@@ -1,23 +1,109 @@
-# Rust
-target/
-**/target/
+# ==========================================
+# General OS files
+# ==========================================
 
-# WASM / Trunk
-dist/
-pkg/
-
-# Node (if any JS tooling exists)
-node_modules/
-
-# OS
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
 
-# Editor
+# ==========================================
+# Editors
+# ==========================================
+
 .vscode/
 .idea/
+*.code-workspace
 
-# Logs
-*.log
-
+# ==========================================
 # Environment files
+# ==========================================
+
 .env
+.env.*
+!.env.example
+
+# ==========================================
+# Rust backend
+# ==========================================
+
+# Cargo build output
+target/
+
+# Rust lock file policy
+# Keep Cargo.lock for applications.
+# Uncomment if this is a library crate:
+# Cargo.lock
+
+# Rust generated files
+**/*.rs.bk
+
+# ==========================================
+# Node / React / Vite frontend
+# ==========================================
+
+node_modules/
+
+dist/
+build/
+
+.vite/
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# Cesium generated assets
+# ==========================================
+
+# Cesium build output
+public/cesium/
+cesium/
+
+# ==========================================
+# Testing / coverage
+# ==========================================
+
+coverage/
+.nyc_output/
+
+# ==========================================
+# Temporary files
+# ==========================================
+
+tmp/
+temp/
+.cache/
+
+# ==========================================
+# Local databases
+# ==========================================
+
+*.sqlite
+*.sqlite3
+*.db
+
+# ==========================================
+# Python tooling (if used for scripts/data)
+# ==========================================
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ==========================================
+# Satellite data / downloaded assets
+# ==========================================
+
+*.tle
+*.txt.tmp
+data/local/
+downloads/
+
+# Keep examples
+!data/example/
