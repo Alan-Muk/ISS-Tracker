@@ -1,378 +1,586 @@
-# ISS Real-Time Tracking System
+# Satellite Tracking System
 
 ![Rust](https://img.shields.io/badge/Rust-1.89-000000?logo=rust)
 ![Axum](https://img.shields.io/badge/Axum-Web_Server-000000)
-![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-654FF0?logo=webassembly)
-![WebSockets](https://img.shields.io/badge/Protocol-WebSockets-blue)
-![Leaflet](https://img.shields.io/badge/Leaflet-Interactive_Map-199900?logo=leaflet)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![CesiumJS](https://img.shields.io/badge/CesiumJS-3D_Globe-6CADDF)
+![Tokio](https://img.shields.io/badge/Tokio-Async_Runtime-000000)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A real-time International Space Station tracking platform built with Rust, WebSockets, and WebAssembly.
+A full-stack satellite visualization platform that downloads, parses, classifies and renders thousands of active Earth-orbiting satellites in real time.
 
-The system collects live ISS telemetry, streams position updates through an asynchronous backend, and renders the station's movement on an interactive global map with smooth real-time animation.
+The application combines a high-performance asynchronous Rust backend with a React + Cesium frontend to provide an interactive 3D globe capable of displaying orbital motion, constellation classification, orbit prediction and real-time satellite visualization.
 
 ---
 
 # Overview
 
-ISS Tracker is a full-stack real-time geospatial application designed around continuous data streaming.
-
-The system workflow:
+The system is designed around the complete satellite data lifecycle.
 
 ```text
-Open Notify ISS API
-          |
-          ↓
-Rust Async Backend
-          |
-          ↓
-WebSocket Data Stream
-          |
-          ↓
-Rust WebAssembly Client
-          |
-          ↓
-Leaflet Map Renderer
-          |
-          ↓
-Live ISS Visualization
+                CelesTrak
+
+                    │
+                    ▼
+
+          TLE Download Service
+
+                    │
+                    ▼
+
+             Local Cache Layer
+
+                    │
+                    ▼
+
+             TLE Parser Engine
+
+                    │
+                    ▼
+
+         Orbit Metadata Generator
+
+                    │
+                    ▼
+
+          Satellite Manager (Rust)
+
+                    │
+          REST API (Axum)
+
+                    │
+                    ▼
+
+      React + TypeScript Frontend
+
+                    │
+                    ▼
+
+         Cesium 3D Globe Renderer
+
+                    │
+                    ▼
+
+      Interactive Satellite Tracking
 ```
 
-The project demonstrates how real-time telemetry can be collected, processed, transmitted, and visualized using modern systems programming technologies.
+The backend continuously maintains a catalogue of active satellites while the frontend focuses entirely on visualization, interaction and animation.
 
 ---
 
-# Problem
+# Motivation
 
-Real-time location systems require more than periodic data fetching.
+Tracking satellites involves significantly more than displaying coordinates on a globe.
 
-A reliable tracking system must handle:
+A complete visualization platform must address:
 
-- Continuous data updates
-- Low-latency communication
-- State synchronization
-- Smooth visualization
-- Network interruptions
+- ingesting thousands of TLE records
+- validating orbital data
+- deriving orbital characteristics
+- organizing satellites into constellations
+- exposing a queryable API
+- rendering thousands of moving objects efficiently
+- animating orbital motion
+- visualizing orbital regions
+- supporting user interaction at scale
 
-ISS Tracker explores how event-driven architectures can be used to build responsive real-time applications.
+This project explores how modern systems programming and GPU-accelerated rendering can be combined to build a performant satellite visualization platform.
 
 ---
 
 # Architecture
 
-## System Architecture
+## High-Level Architecture
 
 ```text
-                 ISS API
+                        CelesTrak
 
-                   |
-                   ↓
+                            │
+                Download Active Catalog
 
-          Rust Backend (Axum)
+                            │
 
-                   |
-                   ↓
+                Validate TLE Records
 
-        WebSocket Communication
+                            │
 
-                   |
-                   ↓
+                 Parse Orbital Elements
 
-      Rust WASM Frontend Client
+                            │
 
-                   |
-                   ↓
+            Compute Orbit Characteristics
 
-          Leaflet Visualization
+                            │
+
+             Store in Satellite Manager
+
+                            │
+
+                Axum REST Endpoints
+
+                            │
+
+               React Data Fetching Hooks
+
+                            │
+
+                 Cesium Scene Graph
+
+                            │
+
+           Animated Satellite Rendering
 ```
 
 ---
 
-# Components
+# Backend
 
-## Backend
+The backend is entirely written in Rust.
 
-Built using Rust and Axum.
+Responsibilities include:
 
-Responsibilities:
+- downloading active TLE catalogues
+- validating downloaded data
+- maintaining an offline cache
+- parsing orbital elements
+- generating derived orbital metadata
+- satellite classification
+- REST API
+- prediction generation
+- orbital position calculation
 
-- Poll ISS telemetry data
-- Process incoming coordinates
-- Serialize location updates
-- Broadcast updates through WebSockets
-
-Technologies:
-
-- Rust
-- Axum
-- Tokio
-- Reqwest
-- Tower HTTP
+The backend separates responsibilities into dedicated modules, allowing each subsystem to evolve independently.
 
 ---
 
-## Real-Time Communication Layer
+# TLE Download Pipeline
 
-The system uses WebSockets to maintain a persistent connection between backend and frontend.
+The backend downloads the current active satellite catalogue directly from CelesTrak.
 
-Data flow:
+Workflow:
 
 ```text
-ISS Position Update
+HTTP Request
 
-        ↓
+      │
 
-JSON Serialization
+      ▼
 
-        ↓
+Receive TLE File
 
-WebSocket Broadcast
+      │
 
-        ↓
+Validate Format
 
-Frontend State Update
+      │
+
+      ▼
+
+Save Local Cache
+
+      │
+
+      ▼
+
+Parse Records
+
+      │
+
+      ▼
+
+Insert Into Manager
 ```
 
-Benefits:
-
-- Low latency updates
-- Continuous streaming
-- Reduced polling overhead
-- Real-time synchronization
+If downloading fails, the application automatically falls back to the cached catalogue, allowing the system to continue operating without network access.
 
 ---
 
-## WebAssembly Frontend
+# TLE Parser
 
-The frontend runs Rust code compiled to WebAssembly.
+The parser processes every satellite using the standard three-line format:
 
-Responsibilities:
+```text
+Satellite Name
 
-- Receive telemetry updates
-- Manage client-side state
-- Communicate with JavaScript APIs
-- Update map visualization
+Line 1
 
-Technologies:
+Line 2
+```
 
-- Rust WASM
-- Leptos / wasm-bindgen
-- JavaScript interoperability
-- Leaflet.js
+For every record it extracts:
 
----
+- NORAD identifier
+- satellite name
+- original TLE lines
+- derived orbital metadata
 
-# Core Features
-
-## Live ISS Position Tracking
-
-- Fetches current ISS coordinates
-- Streams updates in real time
-- Displays current orbital position
+Malformed records are rejected before entering the application.
 
 ---
 
-## Interactive World Map
+# Orbit Metadata
 
-The visualization includes:
+Rather than exposing raw TLE information, the backend computes higher-level orbital characteristics.
 
-- Global map rendering
-- ISS location marker
-- Geographic positioning
-- Movement tracking
+Derived values include:
 
----
+- orbital altitude
+- inclination
+- orbital period
+- orbit region
 
-## Smooth Motion Animation
-
-Instead of jumping between coordinates, the frontend interpolates movement.
-
-This provides:
-
-- Smoother transitions
-- More realistic motion
-- Better user experience
+This allows the frontend to perform visualization without understanding TLE mathematics.
 
 ---
 
-## Orbit Trail Visualization
+# Orbit Classification
 
-The application tracks previous ISS positions to display movement history.
+Satellites are automatically classified according to their altitude.
 
-This provides:
+| Region | Approximate Altitude |
+|---------|---------------------:|
+| VLEO | 0–300 km |
+| LEO | 300–2,000 km |
+| MEO | 2,000–35,786 km |
+| GEO | ~35,786 km |
+| HEO | Above GEO |
 
-- Visual trajectory representation
-- Motion context
-- Orbital path awareness
+These classifications drive filtering, coloring and visualization.
+
+---
+
+# Satellite Classification
+
+Constellations are automatically identified from satellite names.
+
+Examples include:
+
+- Starlink
+- GPS
+- Galileo
+- OneWeb
+- NOAA
+- Iridium
+- Landsat
+- ISS
+
+Grouping satellites allows constellation-based filtering and statistics.
+
+---
+
+# Satellite Manager
+
+The backend stores satellites inside an in-memory manager backed by a HashMap.
+
+Responsibilities include:
+
+- insertion
+- lookup by NORAD ID
+- bulk loading
+- iteration
+- catalogue statistics
+
+The manager acts as the application's primary data store.
+
+---
+
+# REST API
+
+The backend exposes multiple endpoints.
+
+## Health
+
+```
+GET /health
+```
+
+Returns application status.
+
+---
+
+## Satellite Catalogue
+
+```
+GET /satellites
+```
+
+Returns active satellites.
+
+Supports configurable limits.
+
+---
+
+## Individual Satellite
+
+```
+GET /satellites/{norad_id}
+```
+
+Returns metadata for a specific satellite.
+
+---
+
+## Live Position
+
+```
+GET /satellites/{norad_id}/position
+```
+
+Calculates the current orbital position.
+
+---
+
+## Orbit Prediction
+
+```
+GET /satellites/{norad_id}/prediction
+```
+
+Generates a future orbital path using SGP4 propagation.
+
+---
+
+## Group Statistics
+
+```
+GET /satellites/groups
+```
+
+Returns constellation counts.
+
+---
+
+## Orbit Statistics
+
+```
+GET /satellites/orbits
+```
+
+Returns the distribution of orbital regions.
+
+---
+
+# Frontend
+
+The frontend is implemented using React, TypeScript and CesiumJS.
+
+Responsibilities include:
+
+- rendering the globe
+- managing camera interaction
+- fetching backend data
+- animating satellites
+- displaying orbital trails
+- rendering orbit predictions
+- filtering orbital regions
+- user interaction
+
+---
+
+# Cesium Rendering Engine
+
+Rendering is split into independent scene layers.
+
+```
+Viewer
+
+ ├── Globe
+ ├── Stars
+ ├── Earth
+ ├── Orbit Shells
+ ├── Satellite Points
+ ├── Satellite Trails
+ ├── Prediction Lines
+ └── Selected Satellite
+```
+
+Each layer manages only one responsibility, keeping rendering modular and maintainable.
+
+---
+
+# Satellite Animation
+
+Rather than repeatedly querying live positions, the frontend performs smooth interpolation between predicted orbit points.
+
+For each frame:
+
+1. elapsed simulation time advances
+2. neighboring orbit points are selected
+3. latitude is interpolated
+4. longitude interpolation correctly wraps around ±180°
+5. altitude is interpolated
+6. Cesium point primitives are updated
+
+This produces continuous orbital motion instead of discrete jumps.
+
+---
+
+# Orbit Prediction Rendering
+
+When a satellite is selected, the backend-generated prediction is converted into Cartesian coordinates and rendered as a polyline around Earth.
+
+This allows users to visualize an upcoming orbital path before the satellite reaches it.
+
+---
+
+# Orbit Regions
+
+The application visualizes major orbital regions using translucent spherical shells.
+
+Displayed regions include:
+
+- VLEO
+- LEO
+- MEO
+- GEO
+- HEO
+
+Selecting a region automatically:
+
+- highlights the shell
+- filters satellites
+- moves the camera
+- updates visible statistics
+
+---
+
+# Camera System
+
+The camera supports:
+
+- smooth orbital movement
+- automatic region fly-to
+- zoom constraints
+- optimized render requests
+- persistent interaction
+
+---
+
+# Visual Design
+
+The globe uses a custom space-themed appearance.
+
+Features include:
+
+- grayscale Earth
+- atmospheric lighting
+- procedural star field
+- colored constellation markers
+- orbital shells
+- fading orbital trails
+- highlighted selected satellites
+
+The visualization prioritizes readability over photorealism.
+
+---
+
+# Performance Considerations
+
+Rendering thousands of satellites requires minimizing expensive React updates.
+
+The application therefore:
+
+- stores primitives directly inside Cesium collections
+- updates positions imperatively
+- reuses objects
+- enables request-based rendering
+- separates static and dynamic scene layers
+
+This significantly reduces rendering overhead.
 
 ---
 
 # Data Flow
 
 ```text
-1. Backend requests ISS coordinates
+Download TLE
 
-2. ISS location is received
+      │
 
-3. Backend converts data into JSON
+Parse Records
 
-4. WebSocket broadcasts update
+      │
 
-5. WASM client receives message
+Compute Metadata
 
-6. Frontend updates map state
+      │
 
-7. Leaflet animates marker movement
+Store Satellites
+
+      │
+
+Expose REST API
+
+      │
+
+Fetch From React
+
+      │
+
+Build Cesium Scene
+
+      │
+
+Animate Satellites
+
+      │
+
+User Interaction
 ```
 
 ---
 
-# Technical Highlights
+# Testing
 
-- Built an asynchronous Rust backend
-- Designed WebSocket-based streaming architecture
-- Implemented Rust-to-JavaScript interoperability
-- Created a WebAssembly-powered frontend
-- Built a real-time geospatial visualization system
-- Managed continuous event-driven updates
+The backend includes unit and integration tests covering:
 
----
+- TLE parsing
+- NORAD extraction
+- malformed input
+- catalogue parsing
+- constellation classification
+- REST endpoints
 
-# Design Decisions
-
-## WebSocket Streaming
-
-Traditional polling creates unnecessary repeated requests.
-
-WebSockets provide:
-
-- Persistent communication
-- Lower latency
-- Efficient updates
+These tests ensure correctness of both parsing logic and API behaviour.
 
 ---
 
-## Rust Full-Stack Architecture
+# Technologies
 
-Using Rust across backend and frontend provides:
+## Backend
 
-- Shared language ecosystem
-- Strong type safety
-- High-performance execution
+- Rust
+- Tokio
+- Axum
+- Reqwest
+- Serde
+- ThisError
 
----
+## Frontend
 
-## Client-Side Rendering
-
-The backend focuses on:
-
-- Data retrieval
-- Streaming
-- Communication
-
-The frontend handles:
-
-- Visualization
-- Animation
-- User interaction
-
-This keeps responsibilities separated.
-
----
-
-# System Characteristics
-
-## Event-Driven Design
-
-The system follows an event flow:
-
-```text
-New ISS Position
-
-        ↓
-
-Backend Event
-
-        ↓
-
-WebSocket Message
-
-        ↓
-
-Frontend Update
-
-        ↓
-
-Visual Transition
-```
-
----
-
-## Real-Time Requirements
-
-The system prioritizes:
-
-- Fast updates
-- Smooth rendering
-- Reliable communication
-- Efficient data transfer
-
----
-
-# Example Applications
-
-- Satellite tracking systems
-- IoT telemetry dashboards
-- Real-time monitoring platforms
-- Geospatial applications
-- Event-driven architectures
-
----
-
-# Challenges
-
-## Maintaining Smooth Motion
-
-Raw GPS-style updates can appear discontinuous.
-
-Solution:
-
-- Client-side interpolation
-- Animated transitions
-
----
-
-## Real-Time Communication
-
-Persistent connections require careful handling.
-
-Solution:
-
-- WebSocket streaming
-- Async backend architecture
-
----
-
-## Browser and Rust Integration
-
-WebAssembly introduces communication boundaries.
-
-Solution:
-
-- wasm-bindgen interfaces
-- JavaScript interoperability
+- React
+- TypeScript
+- CesiumJS
+- Resium
+- Vite
 
 ---
 
 # Future Improvements
 
-- Add orbital trajectory prediction
-- Store historical ISS paths using time-series storage
-- Add user location notifications
-- Implement WebSocket reconnection strategies
-- Add backend caching layer
-- Upgrade to 3D globe rendering with WebGL / Three.js
-- Add multiple satellite tracking
+Potential extensions include:
+
+- WebSocket streaming for live updates
+- continuous TLE refresh scheduling
+- search and autocomplete
+- pass prediction over user locations
+- ground station visualization
+- orbital collision analysis
+- historical orbit replay
+- space debris visualization
+- launch history integration
+- GPU-instanced rendering for very large constellations
 
 ---
 
