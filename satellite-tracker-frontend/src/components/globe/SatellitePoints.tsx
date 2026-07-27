@@ -1,30 +1,71 @@
-import { useEffect, useRef } from "react";
+import {
+    useEffect,
+    useRef,
+} from "react";
+
 
 import {
     PointPrimitiveCollection,
-    Color,
+    PointPrimitive,
     ScreenSpaceEventHandler,
     ScreenSpaceEventType,
 } from "cesium";
 
-import { useCesium } from "resium";
+
+import {
+    useCesium,
+} from "resium";
+
+import {
+    Cartesian2,
+} from "cesium";
 
 import type {
+    Satellite,
     SatellitePosition,
 } from "../../api";
 
-import { renderPosition } from "./rendering";
-import { pushTrail } from "./satelliteTrails";
+
+import type {
+    AnimatedSatellite,
+} from "./SatelliteAnimator";
 
 
+import {
+    SatelliteAnimator,
+} from "./SatelliteAnimator";
+
+
+import {
+    renderPosition,
+} from "./rendering";
+
+
+import SatellitePointLayer from "./SatellitePointLayer";
+
+import {
+    pushTrail,
+} from "./satelliteTrails";
+
+
+import {
+    Cartesian3,
+} from "cesium";
+
+
+import {
+    trails,
+} from "./satelliteTrails";
 
 interface Props {
 
     satellites: SatellitePosition[];
 
+    satelliteData: Satellite[];
+
     highlightedIds: number[];
 
-    selectedNorad: number;
+    selectedNorad: number | null;
 
     onSelect: (
         noradId: number
@@ -34,9 +75,15 @@ interface Props {
 
 
 
+
+
+
+
 export default function SatellitePoints({
 
     satellites,
+
+    satelliteData,
 
     highlightedIds,
 
@@ -54,101 +101,206 @@ export default function SatellitePoints({
 
 
 
+
+
     const collection =
+
         useRef<PointPrimitiveCollection | null>(null);
 
 
 
 
 
+    const pointMap =
+
+        useRef<Map<number, PointPrimitive>>(
+
+            new Map()
+
+        );
+
+
+
+
+
+    const animatedSatellites =
+
+        useRef<AnimatedSatellite[]>([]);
+
+
+
+
+
+    const animator =
+
+        useRef<SatelliteAnimator | null>(null);
+
+
+
+
+
+
+
+
+
+    //
+    // Create Cesium point collection
+    //
     useEffect(() => {
 
+
         if (!scene) {
+
             return;
+
         }
 
 
 
+
+
         const points =
+
             new PointPrimitiveCollection();
 
 
 
+
+
         scene.primitives.add(
+
             points
+
         );
 
 
+
+
+
         collection.current =
+
             points;
 
 
 
+
+
+
+
         const handler =
+
             new ScreenSpaceEventHandler(
+
                 scene.canvas
+
             );
 
 
 
-        handler.setInputAction(
-
-            (movement: any) => {
-
-
-                const picked =
-                    scene.pick(
-                        movement.position
-                    );
 
 
 
-                if (
-                    picked &&
-                    picked.id &&
-                    picked.id.norad_id !== undefined
-                ) {
 
-                    onSelect(
-                        picked.id.norad_id
-                    );
+handler.setInputAction(
 
-                }
+    (movement: {
+        position: Cartesian2;
+    }) => {
 
 
-            },
+        const picked =
 
-            ScreenSpaceEventType.LEFT_CLICK
+            scene.pick(
 
-        );
+                movement.position
+
+            );
+
+
+
+        const pickedSatellite =
+
+            picked?.id as SatellitePosition | undefined;
+
+
+
+        if (
+
+            pickedSatellite?.norad_id !== undefined
+
+        ) {
+
+
+            onSelect(
+
+                pickedSatellite.norad_id
+
+            );
+
+
+        }
+
+
+    },
+
+
+    ScreenSpaceEventType.LEFT_CLICK
+
+);
+
+
+
+
+
 
 
 
         return () => {
 
+
             handler.destroy();
 
 
+
+
+
             if (
+
                 !points.isDestroyed()
+
             ) {
 
+
                 scene.primitives.remove(
+
                     points
+
                 );
+
 
             }
 
 
-            collection.current =
-                null;
+
+
+
+            pointMap.current.clear();
+
+
+            collection.current = null;
+
+
 
         };
 
 
+
     }, [
+
         scene,
+
         onSelect,
+
     ]);
 
 
@@ -157,18 +309,15 @@ export default function SatellitePoints({
 
 
 
+
+
+    //
+    // Animation loop
+    //
     useEffect(() => {
 
 
-        const points =
-            collection.current;
-
-
-
-        if (
-            !points ||
-            points.isDestroyed()
-        ) {
+        if (!scene) {
 
             return;
 
@@ -176,96 +325,219 @@ export default function SatellitePoints({
 
 
 
-        points.removeAll();
 
 
+animator.current =
 
-        satellites.forEach(
-            satellite => {
+    new SatelliteAnimator(
 
+        (
 
-                const position =
-                    renderPosition(
+            noradId,
 
-                        satellite.longitude,
+            position,
 
-                        satellite.latitude,
-
-                        satellite.altitude_km
-
-                    );
+        ) => {
 
 
+            const point =
 
-                const isHighlighted =
-                    highlightedIds.includes(
-                        satellite.norad_id
-                    );
+                pointMap.current.get(
 
+                    noradId
 
-
-                const isSelected =
-                    satellite.norad_id === selectedNorad;
-
-
-
-
-
-                points.add({
-
-                    position,
-
-
-                    pixelSize:
-
-                        isSelected
-                            ? 14
-                            : isHighlighted
-                                ? 8
-                                : 4,
-
-
-
-                    color:
-
-                        isSelected
-
-                            ? Color.YELLOW
-
-                            : isHighlighted
-
-                                ? Color.CYAN
-
-                                : Color.GRAY,
-
-
-
-                    id: satellite,
-
-                });
-
-
-
-                pushTrail(
-                    satellite.norad_id,
-                    position
                 );
 
 
+
+
+            if (point) {
+
+                point.position =
+
+                    position;
+
             }
+
+
+
+            const trail =
+
+                trails.get(
+
+                    noradId
+
+                );
+
+
+
+            const last =
+
+                trail?.[
+
+                    trail.length - 1
+
+                ];
+
+
+
+            if (
+
+                !last ||
+
+                !Cartesian3.equals(
+
+                    last,
+
+                    position
+
+                )
+
+            ) {
+
+                pushTrail(
+
+                    noradId,
+
+                    position
+
+                );
+
+            }
+
+
+        }
+
+    );
+
+
+
+
+
+
+
+        let lastTime =
+
+            performance.now();
+
+
+
+
+
+
+        function tick() {
+
+
+
+            const now =
+
+                performance.now();
+
+
+
+
+
+            const deltaSeconds =
+
+                (
+
+                    now - lastTime
+
+                ) / 1000;
+
+
+
+
+
+            lastTime = now;
+
+
+
+
+
+
+
+            animator.current?.update(
+
+                animatedSatellites.current,
+
+
+                deltaSeconds,
+
+
+                renderPosition,
+
+            );
+
+
+
+
+
+
+            scene?.requestRender();
+
+
+        }
+
+
+
+
+
+
+
+        scene.postRender.addEventListener(
+
+            tick
 
         );
 
 
 
+
+
+
+
+        return () => {
+
+
+            scene.postRender.removeEventListener(
+
+                tick
+
+            );
+
+
+        };
+
+
+
     }, [
-        satellites,
-        highlightedIds,
-        selectedNorad,
+
+        scene,
+
     ]);
 
 
+    return (
 
-    return null;
+    <SatellitePointLayer
+
+        satellites={satellites}
+
+        satelliteData={satelliteData}
+
+        highlightedIds={highlightedIds}
+
+        selectedNorad={selectedNorad}
+
+        collection={collection}
+
+        pointMap={pointMap}
+
+        animatedSatellites={animatedSatellites}
+
+    />
+
+    );
 
 }

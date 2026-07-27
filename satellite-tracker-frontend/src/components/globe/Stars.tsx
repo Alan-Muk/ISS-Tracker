@@ -1,53 +1,156 @@
-import { useMemo } from "react";
+import {
+    useEffect,
+    useRef,
+} from "react";
 
-import { Entity } from "resium";
 
 import {
+    PointPrimitiveCollection,
     Cartesian3,
     Color,
 } from "cesium";
 
 
+import {
+    useCesium,
+} from "resium";
+
+
+
+
+
 export default function Stars() {
 
-    const stars =
-        useMemo(() => {
 
-            return Array.from(
-                { length: 180 },
-                () =>
+    const {
+        scene,
+    } = useCesium();
+
+
+
+    const collection =
+        useRef<PointPrimitiveCollection | null>(
+            null
+        );
+
+
+
+
+
+    useEffect(() => {
+
+
+        if (!scene) {
+
+            return;
+
+        }
+
+
+
+        const stars =
+            new PointPrimitiveCollection();
+
+
+
+
+        scene.primitives.add(
+            stars
+        );
+
+
+
+        collection.current =
+            stars;
+
+
+
+
+
+
+        for (
+            let i = 0;
+            i < 500;
+            i++
+        ) {
+
+
+            stars.add({
+
+                position:
+
                     Cartesian3.fromDegrees(
+
                         Math.random() * 360 - 180,
+
                         Math.random() * 180 - 90,
-                        90_000_000,
-                    )
-            );
 
-        }, []);
+                        100_000_000
+
+                    ),
 
 
-    return (
-        <>
-            {stars.map(
-                (position, index) => (
+                pixelSize:
 
-                    <Entity
-                        key={`star-${index}`}
-                        position={position}
+                    Math.random() > 0.8
 
-                        point={{
-                            pixelSize:
-                                1,
+                        ? 2
 
-                            color:
-                                Color.fromCssColorString(
-                                    "#777777"
-                                ),
-                        }}
-                    />
+                        : 1,
 
-                )
-            )}
-        </>
-    );
+
+                color:
+
+                    Color.WHITE.withAlpha(
+
+                        0.6 +
+
+                        Math.random() * 0.4
+
+                    ),
+
+            });
+
+
+        }
+
+
+
+        scene.requestRender();
+
+
+
+
+
+        return () => {
+
+
+            if (
+
+                !stars.isDestroyed()
+
+            ) {
+
+                scene.primitives.remove(
+                    stars
+                );
+
+            }
+
+
+        };
+
+
+
+    }, [
+
+        scene,
+
+    ]);
+
+
+
+
+    return null;
+
 }

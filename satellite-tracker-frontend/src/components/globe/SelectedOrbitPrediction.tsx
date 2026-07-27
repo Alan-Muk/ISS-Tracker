@@ -1,69 +1,213 @@
 import {
-    Cartesian3,
+    useEffect,
+} from "react";
+
+
+import {
+    useCesium,
+} from "resium";
+
+
+import {
     Color,
-    Material,
     PolylineCollection,
 } from "cesium";
 
-import { useCesium } from "resium";
-import { useEffect } from "react";
+
+import {
+    getPrediction,
+} from "./predictionStore";
+
+
+import {
+    orbitPointsToCartesian,
+} from "./orbitRendering";
+
+
+
+
 
 interface Props {
+
     noradId: number;
+
 }
 
+
+
+
+
 export default function SelectedOrbitPrediction({
+
     noradId,
+
 }: Props) {
 
-    const { scene } = useCesium();
+
+    const {
+
+        scene,
+
+    } = useCesium();
+
+
+
+
+
 
     useEffect(() => {
 
-        if (!scene) return;
 
-        const collection = new PolylineCollection();
+        if (!scene) {
 
-        scene.primitives.add(collection);
-
-        const positions: Cartesian3[] = [];
-
-        // Temporary orbit arc
-        for (let i = 0; i < 120; i++) {
-
-            const angle = (i / 119) * Math.PI * 1.5;
-
-            positions.push(
-                Cartesian3.fromDegrees(
-                    angle * 30 - 180,
-                    Math.sin(angle) * 40,
-                    500000
-                )
-            );
+            return;
 
         }
 
+
+
+
+
+
+        const prediction =
+
+            getPrediction(
+
+                noradId
+
+            );
+
+
+
+
+
+
+
+        if (
+
+            !prediction ||
+
+            prediction.points.length < 2
+
+        ) {
+
+            return;
+
+        }
+
+
+
+
+
+
+
+        const collection =
+
+            new PolylineCollection();
+
+
+
+
+
+
+        scene.primitives.add(
+
+            collection
+
+        );
+
+
+
+
+
+
+
+
+        const positions =
+
+            orbitPointsToCartesian(
+
+                prediction.points
+
+            );
+
+
+
+
+
+
+
         collection.add({
+
             positions,
+
+
             width: 3,
-            material: Material.fromType(
-                Material.PolylineGlowType,
-                {
-                    glowPower: 0.2,
-                    color: Color.CYAN,
-                }
-            ),
+
+
+            material:
+
+                Color.CYAN.withAlpha(
+
+                    0.8
+
+                ),
+
         });
+
+
+
+
+
+
+
+        scene.requestRender();
+
+
+
+
+
+
 
         return () => {
 
-            if (!collection.isDestroyed()) {
-                scene.primitives.remove(collection);
+
+            if (
+
+                !collection.isDestroyed()
+
+            ) {
+
+
+                scene.primitives.remove(
+
+                    collection
+
+                );
+
+
+                collection.destroy();
+
             }
+
 
         };
 
-    }, [scene, noradId]);
+
+
+    }, [
+
+        scene,
+
+        noradId,
+
+    ]);
+
+
+
+
+
+
 
     return null;
 

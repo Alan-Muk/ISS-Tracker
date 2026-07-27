@@ -1,174 +1,238 @@
 import type {
     Satellite,
-    SatelliteGroups,
     SatellitePosition,
 } from "../api";
 
 
+
 interface Props {
 
-    groups: SatelliteGroups;
-
-    satellites: Satellite[];
-
-    selectedGroup: string;
-    onGroupChange: (
-        group: string
-    ) => void;
-
-    selectedNorad: number;
-    onSatelliteChange: (
-        norad: number
-    ) => void;
+    satellite: Satellite;
 
     position: SatellitePosition;
 
-    onRefresh: () => void;
+    onClose: () => void;
+
 }
 
 
+
+
+
+
+
 export default function TrackerPanel({
-    groups,
-    satellites,
 
-    selectedGroup,
-    onGroupChange,
-
-    selectedNorad,
-    onSatelliteChange,
+    satellite,
 
     position,
 
-    onRefresh,
+    onClose,
 
 }: Props) {
 
 
-    const selectedSatellite =
-        satellites.find(
-            (satellite) =>
-                satellite.norad_id === selectedNorad
-        );
 
 
     return (
 
-        <aside className="overlay">
+        <aside className="overlay telemetry-panel">
 
 
-            <select
-                value={selectedGroup}
-                onChange={(event) =>
-                    onGroupChange(
-                        event.target.value
-                    )
-                }
+            <button
+
+                className="close-button"
+
+                onClick={onClose}
+
             >
 
-                <option value="">
-                    All Satellites
-                </option>
+                ×
+
+            </button>
 
 
-                {Object.entries(groups)
-                    .map(
-                        ([group, count]) => (
 
-                            <option
-                                key={group}
-                                value={group}
-                            >
-                                {group}
-                                {" "}
-                                ({count})
-                            </option>
-
-                        )
-                    )}
-
-            </select>
-
-
-            <select
-                value={selectedNorad}
-                onChange={(event) =>
-                    onSatelliteChange(
-                        Number(
-                            event.target.value
-                        )
-                    )
-                }
-            >
-
-                {satellites.map(
-                    (satellite) => (
-
-                        <option
-                            key={satellite.norad_id}
-                            value={satellite.norad_id}
-                        >
-                            {satellite.name}
-                        </option>
-
-                    )
-                )}
-
-            </select>
 
 
             <div className="telemetry">
 
+
                 <h2>
-                    {selectedSatellite?.name}
+
+                    {satellite.name}
+
                 </h2>
 
 
-                <div>
-                    Group:
-                    {" "}
-                    {selectedSatellite?.group}
-                </div>
+
 
 
                 <div>
+
                     NORAD:
+
                     {" "}
-                    {position.norad_id}
+
+                    {satellite.norad_id}
+
                 </div>
 
 
+
+
+
                 <div>
-                    LAT:
+
+                    Group:
+
                     {" "}
-                    {position.latitude.toFixed(2)}°
+
+                    {satellite.group}
+
                 </div>
 
 
+
+
+
                 <div>
-                    LON:
+
+                    Orbit:
+
                     {" "}
-                    {position.longitude.toFixed(2)}°
+
+                    {
+                        satellite.orbit?.region ??
+                        "UNKNOWN"
+                    }
+
                 </div>
 
 
+
+
+
+                {
+                    satellite.orbit &&
+
+                    <>
+
+                        <div>
+
+                            Inclination:
+
+                            {" "}
+
+                            {
+                                satellite.orbit.inclination_deg.toFixed(1)
+                            }
+
+                            °
+
+                        </div>
+
+
+
+                        <div>
+
+                            Period:
+
+                            {" "}
+
+                            {
+                                satellite.orbit.period_minutes.toFixed(1)
+                            }
+
+                            min
+
+                        </div>
+
+
+                    </>
+
+                }
+
+
+
+
+
                 <div>
-                    ALT:
+
+                    Latitude:
+
                     {" "}
-                    {position.altitude_km.toFixed(0)}
+
+                    {
+                        position.latitude.toFixed(2)
+                    }
+
+                    °
+
+                </div>
+
+
+
+
+
+                <div>
+
+                    Longitude:
+
                     {" "}
+
+                    {
+                        position.longitude.toFixed(2)
+                    }
+
+                    °
+
+                </div>
+
+
+
+
+
+                <div>
+
+                    Altitude:
+
+                    {" "}
+
+                    {
+                        position.altitude_km.toFixed(0)
+                    }
+
                     km
+
                 </div>
+
+
+
+
+
+                <div>
+
+                    Velocity:
+
+                    {" "}
+
+                    {
+                        position.velocity_km_s.toFixed(2)
+                    }
+
+                    km/s
+
+                </div>
+
+
 
             </div>
 
 
-            <button
-                onClick={onRefresh}
-            >
-                Refresh
-            </button>
-
 
         </aside>
+
     );
+
 }

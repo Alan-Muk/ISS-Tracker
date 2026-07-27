@@ -2,21 +2,27 @@ import {
     memo,
 } from "react";
 
-import { Viewer } from "resium";
+
+import {
+    Viewer,
+} from "resium";
+
 
 import GlobeScene from "./globe/GlobeScene";
+
+import GlobeLayers from "./globe/GlobeLayers";
+
+import Stars from "./globe/Stars";
+
 import Earth from "./globe/Earth";
 
-import SatellitePoints from "./globe/SatellitePoints";
-import SatelliteTrail from "./globe/SatelliteTrail";
-import SelectedOrbitPrediction from "./globe/SelectedOrbitPrediction";
-import SelectedSatellite from "./globe/SelectedSatellite";
-import OrbitRegions from "./globe/OrbitRegions";
 
 import type {
+    Satellite,
     SatellitePosition,
     OrbitRegion,
 } from "../api";
+
 
 
 interface Props {
@@ -24,6 +30,8 @@ interface Props {
     position: SatellitePosition | null;
 
     satellites: SatellitePosition[];
+
+    satelliteData: Satellite[];
 
     highlightedIds: number[];
 
@@ -42,22 +50,35 @@ interface Props {
 }
 
 
+
+
+
 function CesiumGlobe({
 
     position,
+
     satellites,
+
+    satelliteData,
+
     highlightedIds,
+
     selectedNorad,
+
     selectedRegion,
+
     onSelect,
+
     onRegionSelect,
 
-}: Props){
+}: Props) {
+
 
 
     return (
 
         <Viewer
+
 
             animation={false}
 
@@ -80,12 +101,15 @@ function CesiumGlobe({
             selectionIndicator={false}
 
 
+
             terrainProvider={undefined}
 
 
-            requestRenderMode={true}
+
+            requestRenderMode={false}
 
             maximumRenderTimeChange={Infinity}
+
 
 
             style={{
@@ -96,87 +120,60 @@ function CesiumGlobe({
 
             }}
 
+
         >
 
 
             <GlobeScene />
 
+            <Stars />
 
             <Earth />
 
-        <OrbitRegions
-
-            selectedRegion={
-                selectedRegion
-            }
-
-            onSelectRegion={
-                onRegionSelect
-            }
-
-        />
 
 
-            {
-                /*
-                    Moving satellites leave
-                    temporary trails
-                */
-            }
+            <GlobeLayers
 
-            <SatelliteTrail />
+                position={
+                    position
+                }
 
-
-            <SatellitePoints
 
                 satellites={
                     satellites
                 }
 
+
+                satelliteData={
+                    satelliteData
+                }
+
+
                 highlightedIds={
                     highlightedIds
                 }
 
+
                 selectedNorad={
-                    selectedNorad ?? -1
+                    selectedNorad
                 }
+
+
+                selectedRegion={
+                    selectedRegion
+                }
+
 
                 onSelect={
                     onSelect
                 }
 
+
+                onRegionSelect={
+                    onRegionSelect
+                }
+
             />
-
-
-
-            {
-                selectedNorad !== null &&
-
-                <SelectedOrbitPrediction
-
-                    noradId={
-                        selectedNorad
-                    }
-
-                />
-
-            }
-
-
-
-            {
-                selectedNorad !== null &&
-                position &&
-
-                <SelectedSatellite
-
-                    position={
-                        position
-                    }
-
-                />
-
-            }
 
 
         </Viewer>
@@ -184,6 +181,7 @@ function CesiumGlobe({
     );
 
 }
+
 
 
 export default memo(

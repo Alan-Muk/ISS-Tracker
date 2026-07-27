@@ -4,6 +4,7 @@ export type SatelliteGroups =
     Record<string, number>;
 
 
+
 export type SatelliteOrbits =
     Record<string, number>;
 
@@ -32,6 +33,7 @@ export interface OrbitMetadata {
 }
 
 
+
 export interface Satellite {
 
     norad_id: number;
@@ -43,6 +45,7 @@ export interface Satellite {
     orbit?: OrbitMetadata;
 
 }
+
 
 
 export interface SatellitePosition {
@@ -58,6 +61,19 @@ export interface SatellitePosition {
     velocity_km_s: number;
 
     timestamp: string;
+
+
+
+}
+
+export interface OrbitPoint {
+
+    latitude: number;
+
+    longitude: number;
+
+    altitude_km: number;
+
 }
 
 
@@ -72,8 +88,11 @@ export interface OrbitPrediction {
 
     step_seconds: number;
 
-    points: SatellitePosition[];
+    points: OrbitPoint[];
+
 }
+
+
 
 
 
@@ -83,9 +102,14 @@ const API_BASE =
 
 
 
+
+
+
+
 export async function getSatellites(
     limit = 500
 ): Promise<Satellite[]> {
+
 
     const params =
         new URLSearchParams();
@@ -97,10 +121,12 @@ export async function getSatellites(
     );
 
 
+
     const response =
         await fetch(
             `${API_BASE}/satellites?${params}`
         );
+
 
 
     if (!response.ok) {
@@ -112,8 +138,14 @@ export async function getSatellites(
     }
 
 
+
     return response.json();
+
 }
+
+
+
+
 
 
 
@@ -121,10 +153,12 @@ export async function getPosition(
     noradId: number
 ): Promise<SatellitePosition> {
 
+
     const response =
         await fetch(
             `${API_BASE}/satellites/${noradId}/position`
         );
+
 
 
     if (!response.ok) {
@@ -136,8 +170,12 @@ export async function getPosition(
     }
 
 
+
     return response.json();
+
 }
+
+
 
 
 
@@ -147,10 +185,12 @@ export async function getPrediction(
     noradId: number
 ): Promise<OrbitPrediction> {
 
+
     const response =
         await fetch(
             `${API_BASE}/satellites/${noradId}/prediction`
         );
+
 
 
     if (!response.ok) {
@@ -162,8 +202,12 @@ export async function getPrediction(
     }
 
 
+
     return response.json();
+
 }
+
+
 
 
 
@@ -172,10 +216,12 @@ export async function getPrediction(
 export async function getSatelliteGroups()
 : Promise<SatelliteGroups> {
 
+
     const response =
         await fetch(
             `${API_BASE}/satellites/groups`
         );
+
 
 
     if (!response.ok) {
@@ -187,8 +233,13 @@ export async function getSatelliteGroups()
     }
 
 
+
     return response.json();
+
 }
+
+
+
 
 
 

@@ -1,29 +1,30 @@
 import {
-    Color,
-    Cartesian3,
-    Cartesian2,
-    ScreenSpaceEventHandler,
-    ScreenSpaceEventType,
-} from "cesium";
+    useEffect,
+} from "react";
+
 
 import {
-    Entity,
-    EllipsoidGraphics,
     useCesium,
 } from "resium";
 
-import {
-    useEffect,
-    useRef,
-} from "react";
-
-import {
-    VISUAL_ALTITUDE_SCALE,
-} from "./rendering";
 
 import type {
     OrbitRegion,
 } from "../../api";
+
+
+import {
+    useOrbitCamera,
+} from "../../hooks/useOrbitCamera";
+
+
+import OrbitRegionRenderer from "./OrbitRegionRenderer";
+
+
+import {
+    createOrbitRegionPicker,
+} from "./OrbitRegionPicker";
+
 
 
 
@@ -31,53 +32,15 @@ interface Props {
 
     selectedRegion: OrbitRegion | "ALL";
 
+
     onSelectRegion: (
+
         region: OrbitRegion | "ALL"
+
     ) => void;
 
 }
 
-
-
-interface Region {
-
-    name: OrbitRegion;
-
-    altitudeKm: number;
-
-    color: string;
-
-}
-
-
-
-const regions: Region[] = [
-
-    {
-        name: "VLEO",
-        altitudeKm: 150,
-        color: "#00ffff",
-    },
-
-    {
-        name: "LEO",
-        altitudeKm: 800,
-        color: "#0088ff",
-    },
-
-    {
-        name: "MEO",
-        altitudeKm: 10000,
-        color: "#aa00ff",
-    },
-
-    {
-        name: "GEO",
-        altitudeKm: 35786,
-        color: "#ff8800",
-    },
-
-];
 
 
 
@@ -92,71 +55,19 @@ export default function OrbitRegions({
 }: Props) {
 
 
+
     const {
         scene,
-        viewer,
-
     } = useCesium();
 
 
 
-    const handler =
-        useRef<ScreenSpaceEventHandler | null>(null);
 
 
+    const {
+        flyToRegion,
+    } = useOrbitCamera();
 
-
-
-    function flyToRegion(
-        regionName: OrbitRegion
-    ) {
-
-
-        if (!viewer) {
-            return;
-        }
-
-
-
-        const region =
-            regions.find(
-                item =>
-                    item.name === regionName
-            );
-
-
-
-        if (!region) {
-            return;
-        }
-
-
-
-        viewer.camera.flyTo({
-
-            destination:
-                Cartesian3.fromDegrees(
-
-                    0,
-
-                    0,
-
-                    (
-                        6378137 +
-                        (
-                            region.altitudeKm *
-                            VISUAL_ALTITUDE_SCALE *
-                            1000
-                        )
-                    ) * 2
-
-                ),
-
-            duration: 2,
-
-        });
-
-    }
 
 
 
@@ -165,25 +76,35 @@ export default function OrbitRegions({
 
 
     //
-    // Allow selector changes to move camera
+    // Camera movement
     //
+
     useEffect(() => {
 
 
         if (
+
             selectedRegion !== "ALL"
+
         ) {
 
+
             flyToRegion(
+
                 selectedRegion
+
             );
+
 
         }
 
 
     }, [
+
         selectedRegion,
-        viewer,
+
+        flyToRegion,
+
     ]);
 
 
@@ -192,96 +113,79 @@ export default function OrbitRegions({
 
 
 
+
+    //
+    // Region click selection
+    //
 
     useEffect(() => {
 
 
         if (!scene) {
+
             return;
+
         }
 
 
 
-        const eventHandler =
-            new ScreenSpaceEventHandler(
-                scene.canvas
-            );
+
+
+        const handler =
+
+            createOrbitRegionPicker({
+
+                scene,
+
+
+                onSelect:
+
+                    region => {
+
+
+                        onSelectRegion(
+
+                            region
+
+                        );
 
 
 
-        eventHandler.setInputAction(
+                        flyToRegion(
 
-            (movement: {
-                position: Cartesian2;
-            }) => {
+                            region
 
-
-                const picked =
-                    scene.pick(
-                        movement.position
-                    );
+                        );
 
 
+                    },
 
-                if (
-                    typeof picked?.id === "string" &&
-                    picked.id.startsWith(
-                        "orbit-region-"
-                    )
-                ) {
-
-
-                    const value =
-                        picked.id.replace(
-                            "orbit-region-",
-                            ""
-                        ) as OrbitRegion;
+            });
 
 
 
-                    flyToRegion(
-                        value
-                    );
-
-
-
-                    onSelectRegion(
-                        value
-                    );
-
-                }
-
-
-            },
-
-            ScreenSpaceEventType.LEFT_CLICK
-
-        );
-
-
-
-        handler.current =
-            eventHandler;
 
 
 
         return () => {
 
-            eventHandler.destroy();
 
-            handler.current =
-                null;
+            handler.destroy();
+
 
         };
 
 
+
     }, [
+
         scene,
-        viewer,
+
+        flyToRegion,
+
         onSelectRegion,
+
     ]);
-
-
 
 
 
@@ -291,116 +195,18 @@ export default function OrbitRegions({
 
     return (
 
-        <>
 
-            {
-                regions.map(
-                    region => {
+        <OrbitRegionRenderer
 
+            selectedRegion={
 
-                        const selected =
-                            selectedRegion === region.name;
+                selectedRegion
 
-
-
-                        const radius =
-                            6378137 +
-                            (
-                                region.altitudeKm *
-                                VISUAL_ALTITUDE_SCALE *
-                                1000
-                            );
-
-
-
-                        return (
-
-                            <Entity
-
-                                key={
-                                    region.name
-                                }
-
-
-                                id={
-                                    `orbit-region-${region.name}`
-                                }
-
-
-                                position={
-                                    Cartesian3.ZERO
-                                }
-
-
-                            >
-
-
-                                <EllipsoidGraphics
-
-
-                                    radii={
-                                        new Cartesian3(
-                                            radius,
-                                            radius,
-                                            radius
-                                        )
-                                    }
-
-
-                                    material={
-
-                                        Color
-                                            .fromCssColorString(
-                                                region.color
-                                            )
-                                            .withAlpha(
-
-                                                selected
-                                                    ? 0.22
-                                                    : 0.04
-
-                                            )
-
-                                    }
-
-
-
-                                    outline={true}
-
-
-
-                                    outlineColor={
-
-                                        Color
-                                            .fromCssColorString(
-                                                region.color
-                                            )
-                                            .withAlpha(
-
-                                                selected
-                                                    ? 1.0
-                                                    : 0.35
-
-                                            )
-
-                                    }
-
-
-
-                                />
-
-
-                            </Entity>
-
-                        );
-
-
-                    }
-                )
             }
 
 
-        </>
+        />
+
 
     );
 

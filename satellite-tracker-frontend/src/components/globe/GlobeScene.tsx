@@ -1,59 +1,132 @@
-import { useEffect, useRef } from "react";
-import { useCesium } from "resium";
 import {
-    Color,
+    useEffect,
+    useRef,
+} from "react";
+
+
+import {
+    useCesium,
+} from "resium";
+
+
+import {
     Cartesian3,
+    Color,
 } from "cesium";
+
+
+import {
+    createImageryProvider,
+} from "./imagery";
+
 
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
 
+
+
+
+
+
 export default function GlobeScene() {
 
-    const { viewer } = useCesium();
+
+    const {
+        viewer,
+    } = useCesium();
+
+
+
 
     const initialized =
         useRef(false);
 
 
+
+
+
+
     useEffect(() => {
 
-        if (!viewer || initialized.current) {
+
+        if (
+
+            !viewer ||
+
+            initialized.current
+
+        ) {
+
             return;
+
         }
 
 
-        initialized.current = true;
+
+
+        initialized.current =
+            true;
+
+
+
 
 
         const scene =
             viewer.scene;
 
 
+
+
+
         //
-        // Rendering optimization
+        // Imagery
         //
 
-        scene.requestRenderMode = true;
+        viewer.imageryLayers.removeAll();
+
+
+        viewer.imageryLayers.addImageryProvider(
+
+            createImageryProvider()
+
+        );
+
+
+
+
+
+
+        //
+        // Rendering
+        //
+
+        scene.requestRenderMode =
+            true;
+
 
         scene.maximumRenderTimeChange =
             Infinity;
 
 
-        //
-        // Remove expensive/default UI assumptions
-        //
 
 
 
+
+
         //
-        // Space appearance
+        // Space background
         //
 
         scene.backgroundColor =
             Color.fromCssColorString(
                 "#0b1d38"
             );
+
+
+
+
+
+
 
 
         //
@@ -64,8 +137,10 @@ export default function GlobeScene() {
             scene.globe;
 
 
+
         globe.showGroundAtmosphere =
             true;
+
 
 
         globe.baseColor =
@@ -74,19 +149,36 @@ export default function GlobeScene() {
             );
 
 
+
         globe.enableLighting =
             false;
 
 
+
+
+
+
+
+
+
         //
-        // Atmospheric effects
+        // Atmosphere
         //
 
         scene.fog.enabled =
             true;
 
+
+
         scene.fog.density =
             0.0002;
+
+
+
+
+
+
+
 
 
         //
@@ -97,39 +189,65 @@ export default function GlobeScene() {
             scene.screenSpaceCameraController;
 
 
+
         cameraController.minimumZoomDistance =
-            3000000;
+            3_000_000;
+
 
 
         cameraController.maximumZoomDistance =
-            20000000;
+            20_000_000;
+
+
+
+
+
+
 
 
         //
-        // Initial camera position
+        // Initial camera
         //
 
         viewer.camera.setView({
 
             destination:
+
                 Cartesian3.fromDegrees(
+
                     0,
+
                     20,
-                    9000000
+
+                    9_000_000
+
                 ),
 
         });
 
 
-        //
-        // Force first render
-        //
+
+
+
+
 
         scene.requestRender();
 
 
-    }, [viewer]);
+
+
+
+    }, [
+
+        viewer,
+
+    ]);
+
+
+
+
 
 
     return null;
+
 }
