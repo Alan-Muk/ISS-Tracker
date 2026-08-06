@@ -254,3 +254,24 @@ pub async fn get_satellite_orbits(
     Json(regions)
 
 }
+
+/*
+ * HTTP handlers for the satellite API.
+ *
+ * This module exposes REST endpoints for querying satellite information,
+ * including satellite listings, individual satellite details, current orbital
+ * position, predicted trajectories, and aggregated statistics.
+ *
+ * Supported functionality:
+ * - List satellites with optional filtering by group or orbit region and an
+ *   optional result limit.
+ * - Retrieve a satellite by its NORAD identifier.
+ * - Compute and return the current propagated position of a satellite.
+ * - Generate a short-term orbital prediction for a satellite.
+ * - Return summary statistics for satellite groups.
+ * - Return summary statistics for orbital regions.
+ *
+ * Handlers access shared application state through AppState, retrieve data
+ * from the satellite manager, and return JSON responses suitable for API
+ * clients.
+ */
