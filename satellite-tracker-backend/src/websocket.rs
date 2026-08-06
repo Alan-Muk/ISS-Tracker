@@ -18,3 +18,16 @@ async fn handle_socket(mut socket: WebSocket) {
         tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     }
 }
+
+/*
+ * WebSocket connection handler.
+ *
+ * Establishes a WebSocket connection with a client and maintains the session
+ * by periodically sending a simple status message every five seconds.
+ *
+ * The connection remains active until the client disconnects or a send
+ * operation fails, at which point the handler exits and the session is
+ * terminated. This implementation provides a basic foundation for real-time
+ * communication and can be extended to stream live satellite updates or other
+ * server-generated events.
+ */
