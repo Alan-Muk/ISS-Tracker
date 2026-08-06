@@ -33,3 +33,14 @@ impl From<&Satellite> for SatelliteResponse {
         }
     }
 }
+
+/*
+ * SatelliteResponse is the API-facing representation of a Satellite.
+ *
+ * It exposes only the fields required by clients (NORAD ID, name, and group),
+ * keeping the internal Satellite model decoupled from the serialized response.
+ *
+ * Conversion implementations are provided for both owned (Satellite) and
+ * borrowed (&Satellite) values, allowing flexible response creation while
+ * avoiding unnecessary ownership transfers where possible.
+ */
