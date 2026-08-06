@@ -32,3 +32,15 @@ async fn main() {
 
     axum::serve(listener, app).await.expect("server failed");
 }
+
+/*
+ * Application entry point.
+ *
+ * Initializes the shared application state, loads the active satellite dataset,
+ * configures the HTTP router, and starts the Axum web server.
+ *
+ * On startup, the application attempts to populate the satellite manager with
+ * the latest available satellite data, reporting the outcome to the console.
+ * Once initialization is complete, it binds to the configured network address
+ * and begins serving incoming API requests.
+ */
