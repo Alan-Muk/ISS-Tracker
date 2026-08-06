@@ -64,3 +64,15 @@ pub fn create_router(state: AppState) -> Router {
         )
         .with_state(state)
 }
+
+/*
+ * Configures the application's HTTP router.
+ *
+ * This module defines all API routes exposed by the backend, including
+ * endpoints for health checks, satellite queries, orbital propagation,
+ * trajectory prediction, and summary statistics.
+ *
+ * The router also applies global middleware, such as CORS configuration,
+ * and attaches the shared application state so it is accessible from all
+ * request handlers.
+ */
