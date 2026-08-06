@@ -22,3 +22,15 @@ impl AppState {
         Self::default()
     }
 }
+
+/*
+ * Shared application state.
+ *
+ * This structure stores resources that must be accessible across multiple
+ * request handlers. The satellite manager is wrapped in an Arc<RwLock<_>>
+ * to enable safe concurrent access, allowing multiple readers while
+ * synchronizing write operations.
+ *
+ * Default and convenience constructors are provided to initialize the
+ * application state with an empty SatelliteManager.
+ */
