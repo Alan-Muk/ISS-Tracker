@@ -1,17 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-
-#[derive(
-    Debug,
-    Clone,
-    Serialize,
-    Deserialize,
-    PartialEq,
-    Eq,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OrbitRegion {
-
     LEO,
 
     MEO,
@@ -23,46 +14,24 @@ pub enum OrbitRegion {
     UNKNOWN,
 }
 
-
 impl OrbitRegion {
-
-    pub fn from_altitude(
-        altitude_km: f64
-    ) -> Self {
-
+    pub fn from_altitude(altitude_km: f64) -> Self {
         match altitude_km {
+            0.0..=2000.0 => Self::LEO,
 
-            0.0..=2000.0 =>
-                Self::LEO,
+            2000.0..=35000.0 => Self::MEO,
 
+            35000.0..=40000.0 => Self::GEO,
 
-            2000.0..=35000.0 =>
-                Self::MEO,
+            40000.0.. => Self::HEO,
 
-
-            35000.0..=40000.0 =>
-                Self::GEO,
-
-
-            40000.0.. =>
-                Self::HEO,
-
-
-            _ =>
-                Self::UNKNOWN,
+            _ => Self::UNKNOWN,
         }
     }
-
 }
 
-
 impl std::fmt::Display for OrbitRegion {
-
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>
-    ) -> std::fmt::Result {
-
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
@@ -74,6 +43,5 @@ impl std::fmt::Display for OrbitRegion {
                 Self::UNKNOWN => "UNKNOWN",
             }
         )
-
     }
 }

@@ -7,15 +7,9 @@ import SatelliteTrail from "./SatelliteTrail";
 import SelectedSatellite from "./SelectedSatellite";
 import SelectedOrbitPrediction from "./SelectedOrbitPrediction";
 
-import type {
-    Satellite,
-    SatellitePosition,
-    OrbitRegion,
-} from "../../api";
-
+import type { Satellite, SatellitePosition, OrbitRegion } from "../../api";
 
 interface Props {
-
     position: SatellitePosition | null;
 
     satellites: SatellitePosition[];
@@ -28,22 +22,12 @@ interface Props {
 
     selectedRegion: OrbitRegion | "ALL";
 
+    onSelect: (noradId: number) => void;
 
-    onSelect: (
-        noradId: number
-    ) => void;
-
-
-    onRegionSelect: (
-        region: OrbitRegion | "ALL"
-    ) => void;
-
+    onRegionSelect: (region: OrbitRegion | "ALL") => void;
 }
 
-
-
 export default function GlobeLayers({
-
     position,
 
     satellites,
@@ -59,106 +43,38 @@ export default function GlobeLayers({
     onSelect,
 
     onRegionSelect,
-
 }: Props) {
-
-
     return (
-
         <>
-
-
             <Earth />
 
-
-
             <OrbitRegions
+                selectedRegion={selectedRegion}
 
-                selectedRegion={
-                    selectedRegion
-                }
-
-
-                onSelectRegion={
-                    onRegionSelect
-                }
-
+                onSelectRegion={onRegionSelect}
             />
 
-
-
-            <SatelliteTrail
-                satelliteData={satelliteData}
-            />
-
-
+            <SatelliteTrail satelliteData={satelliteData} />
 
             <SatellitePoints
+                satellites={satellites}
 
-                satellites={
-                    satellites
-                }
+                satelliteData={satelliteData}
 
+                highlightedIds={highlightedIds}
 
-                satelliteData={
-                    satelliteData
-                }
+                selectedNorad={selectedNorad}
 
-
-                highlightedIds={
-                    highlightedIds
-                }
-
-
-                selectedNorad={
-                    selectedNorad
-                }
-
-
-                onSelect={
-                    onSelect
-                }
-
+                onSelect={onSelect}
             />
 
+            {selectedNorad !== null && (
+                <SelectedOrbitPrediction noradId={selectedNorad} />
+            )}
 
-
-
-
-            {
-                selectedNorad !== null &&
-
-                <SelectedOrbitPrediction
-
-                    noradId={
-                        selectedNorad
-                    }
-
-                />
-
-            }
-
-
-
-
-            {
-                selectedNorad !== null &&
-                position &&
-
-                <SelectedSatellite
-
-                    position={
-                        position
-                    }
-
-                />
-
-            }
-
-
-
+            {selectedNorad !== null && position && (
+                <SelectedSatellite position={position} />
+            )}
         </>
-
     );
-
 }

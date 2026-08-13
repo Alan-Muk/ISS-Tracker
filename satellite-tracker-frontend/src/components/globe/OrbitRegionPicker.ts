@@ -1,117 +1,45 @@
-import {
-    ScreenSpaceEventHandler,
-    ScreenSpaceEventType,
-} from "cesium";
+import { ScreenSpaceEventHandler, ScreenSpaceEventType } from "cesium";
 
+import type { Scene, Cartesian2 } from "cesium";
 
-import type {
-    Scene,
-    Cartesian2,
-} from "cesium";
-
-
-import type {
-    OrbitRegion,
-} from "../../api";
-
-
-
+import type { OrbitRegion } from "../../api";
 
 interface Props {
-
     scene: Scene;
 
-    onSelect: (
-        region: OrbitRegion
-    ) => void;
-
+    onSelect: (region: OrbitRegion) => void;
 }
 
-
-
-
-
 export function createOrbitRegionPicker({
-
     scene,
 
     onSelect,
-
 }: Props) {
-
-
-
-    const handler =
-        new ScreenSpaceEventHandler(
-            scene.canvas
-        );
-
-
-
-
+    const handler = new ScreenSpaceEventHandler(scene.canvas);
 
     handler.setInputAction(
+        (movement: { position: Cartesian2 }) => {
+            const picked = scene.pick(movement.position);
 
-        (
-            movement: {
-                position: Cartesian2;
-            }
-
-        ) => {
-
-
-            const picked =
-                scene.pick(
-                    movement.position
-                );
-
-
-
-            const entity =
-                picked?.id;
-
-
+            const entity = picked?.id;
 
             if (
-
                 entity &&
-
                 typeof entity.id === "string" &&
-
-                entity.id.startsWith(
-                    "orbit-region-"
-                )
-
+                entity.id.startsWith("orbit-region-")
             ) {
+                const region = entity.id.replace(
+                    "orbit-region-",
 
+                    "",
+                ) as OrbitRegion;
 
-                const region =
-                    entity.id.replace(
-
-                        "orbit-region-",
-
-                        ""
-
-                    ) as OrbitRegion;
-
-
-
-                onSelect(
-                    region
-                );
-
+                onSelect(region);
             }
-
-
         },
 
-        ScreenSpaceEventType.LEFT_CLICK
-
+        ScreenSpaceEventType.LEFT_CLICK,
     );
 
-
-
-
     return handler;
-
 }

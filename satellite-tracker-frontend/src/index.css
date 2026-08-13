@@ -87,7 +87,7 @@ body,
 
   padding-top: 16px;
 
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .status div {
@@ -115,7 +115,7 @@ body,
 
   cursor: pointer;
 
-  transition: background .2s;
+  transition: background 0.2s;
 }
 
 .status button:hover {

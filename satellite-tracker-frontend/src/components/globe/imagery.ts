@@ -1,18 +1,7 @@
-import {
-    OpenStreetMapImageryProvider,
-} from "cesium";
-
-
+import { OpenStreetMapImageryProvider } from "cesium";
 
 export function createImageryProvider() {
-
-
     return new OpenStreetMapImageryProvider({
-
-        url:
-            "https://tile.openstreetmap.org/",
-
+        url: "https://tile.openstreetmap.org/",
     });
-
-
 }

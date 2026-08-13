@@ -1,13 +1,8 @@
 import { useEffect } from "react";
 
-import {
-    Globe,
-    useCesium,
-} from "resium";
+import { Globe, useCesium } from "resium";
 
-import {
-    Color,
-} from "cesium";
+import { Color } from "cesium";
 
 export default function Earth() {
     const { scene } = useCesium();
@@ -49,10 +44,5 @@ export default function Earth() {
         };
     }, [scene]);
 
-    return (
-        <Globe
-            showGroundAtmosphere
-            enableLighting
-        />
-    );
+    return <Globe showGroundAtmosphere enableLighting />;
 }

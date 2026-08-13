@@ -1,77 +1,23 @@
-import {
-    useEffect,
-    useState,
-} from "react";
+import { useEffect, useState } from "react";
 
+import type { OrbitPrediction } from "../api";
 
-import type {
-    OrbitPrediction,
-} from "../api";
+import { getPrediction } from "../components/globe/predictionStore";
 
-
-import {
-    getPrediction,
-} from "../components/globe/predictionStore";
-
-
-
-
-
-export function useSatellitePrediction(
-
-    noradId: number | null
-
-) {
-
-
-    const [
-        prediction,
-        setPrediction,
-
-    ] = useState<OrbitPrediction | undefined>(
-        undefined
+export function useSatellitePrediction(noradId: number | null) {
+    const [prediction, setPrediction] = useState<OrbitPrediction | undefined>(
+        undefined,
     );
 
-
-
-
-
-
     useEffect(() => {
-
-
         if (noradId === null) {
-
-            setPrediction(
-                undefined
-            );
+            setPrediction(undefined);
 
             return;
-
         }
 
-
-
-        setPrediction(
-
-            getPrediction(
-                noradId
-            )
-
-        );
-
-
-    }, [
-
-        noradId,
-
-    ]);
-
-
-
-
-
+        setPrediction(getPrediction(noradId));
+    }, [noradId]);
 
     return prediction;
-
 }

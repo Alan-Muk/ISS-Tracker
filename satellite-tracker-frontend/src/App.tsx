@@ -1,228 +1,81 @@
-import {
-    useActiveSatellitePrediction,
-} from "./hooks/useActiveSatellitePrediction";
+import { useActiveSatellitePrediction } from "./hooks/useActiveSatellitePrediction";
 
+import { useSatelliteFilters } from "./hooks/useSatelliteFilters";
 
-import {
-    useSatelliteFilters,
-} from "./hooks/useSatelliteFilters";
+import { useSatellitePositions } from "./hooks/useSatellitePositions";
 
+import { useState } from "react";
 
-import {
-    useSatellitePositions,
-} from "./hooks/useSatellitePositions";
-
-
-import {
-    useState,
-} from "react";
-
-
-import {
-    useSatelliteData,
-} from "./hooks/useSatelliteData";
-
+import { useSatelliteData } from "./hooks/useSatelliteData";
 
 import CesiumGlobe from "./components/CesiumGlobe";
 
 import TrackerPanel from "./components/TrackerPanel";
 
-
-
-
-
-
-
 function App() {
-
-
-    const {
-        satellites,
-
-    } = useSatelliteData();
-
-
-
-
+    const { satellites } = useSatelliteData();
 
     const {
-
         selectedRegion,
 
         setSelectedRegion,
 
-
         highlightedIds,
-
-
     } = useSatelliteFilters({
-
         satellites,
-
     });
 
-
-
-
-
-
-
-    const [
-        selectedNorad,
-        setSelectedNorad,
-
-    ] = useState<number | null>(
-        null
-    );
-
-
-
-
-
-
+    const [selectedNorad, setSelectedNorad] = useState<number | null>(null);
 
     const {
-
         visiblePositions,
 
         position,
-
     } = useSatellitePositions({
-
         satellites,
 
         selectedNorad,
-
     });
 
+    useActiveSatellitePrediction(selectedNorad);
 
-
-
-
-
-
-    useActiveSatellitePrediction(
-
-        selectedNorad
-
+    const selectedSatellite = satellites.find(
+        (satellite) => satellite.norad_id === selectedNorad,
     );
 
-
-
-
-
-
-
-    const selectedSatellite =
-
-        satellites.find(
-
-            satellite =>
-
-                satellite.norad_id === selectedNorad
-
-        );
-
-
-
-
-
-
-
-
     return (
-
         <div className="app">
-
-
             <main className="map">
-
-
                 <CesiumGlobe
-
                     position={position}
 
                     satellites={visiblePositions}
 
                     satelliteData={satellites}
 
-
                     highlightedIds={highlightedIds}
-
 
                     selectedNorad={selectedNorad}
 
-
                     selectedRegion={selectedRegion}
 
+                    onSelect={setSelectedNorad}
 
-
-                    onSelect={
-
-                        setSelectedNorad
-
-                    }
-
-
-
-                    onRegionSelect={
-
-                        setSelectedRegion
-
-                    }
-
-
+                    onRegionSelect={setSelectedRegion}
                 />
-
-
             </main>
 
-
-
-
-
-
-
-            {
-                selectedSatellite &&
-                position &&
-
+            {selectedSatellite && position && (
                 <TrackerPanel
+                    satellite={selectedSatellite}
 
+                    position={position}
 
-                    satellite={
-                        selectedSatellite
-                    }
-
-
-                    position={
-                        position
-                    }
-
-
-                    onClose={
-
-                        () =>
-                            setSelectedNorad(
-                                null
-                            )
-
-                    }
-
-
+                    onClose={() => setSelectedNorad(null)}
                 />
-
-            }
-
-
+            )}
         </div>
-
     );
-
 }
-
-
-
-
 
 export default App;

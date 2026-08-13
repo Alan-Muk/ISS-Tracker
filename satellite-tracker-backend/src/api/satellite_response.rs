@@ -1,9 +1,6 @@
 use serde::Serialize;
 
-use crate::satellite::{
-    group::SatelliteGroup,
-    model::Satellite,
-};
+use crate::satellite::{group::SatelliteGroup, model::Satellite};
 
 #[derive(Debug, Serialize)]
 pub struct SatelliteResponse {

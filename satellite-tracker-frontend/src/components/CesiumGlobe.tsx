@@ -1,12 +1,6 @@
-import {
-    memo,
-} from "react";
+import { memo } from "react";
 
-
-import {
-    Viewer,
-} from "resium";
-
+import { Viewer } from "resium";
 
 import GlobeScene from "./globe/GlobeScene";
 
@@ -16,17 +10,9 @@ import Stars from "./globe/Stars";
 
 import Earth from "./globe/Earth";
 
-
-import type {
-    Satellite,
-    SatellitePosition,
-    OrbitRegion,
-} from "../api";
-
-
+import type { Satellite, SatellitePosition, OrbitRegion } from "../api";
 
 interface Props {
-
     position: SatellitePosition | null;
 
     satellites: SatellitePosition[];
@@ -39,22 +25,12 @@ interface Props {
 
     selectedRegion: OrbitRegion | "ALL";
 
-    onSelect: (
-        noradId: number
-    ) => void;
+    onSelect: (noradId: number) => void;
 
-    onRegionSelect: (
-        region: OrbitRegion | "ALL"
-    ) => void;
-
+    onRegionSelect: (region: OrbitRegion | "ALL") => void;
 }
 
-
-
-
-
 function CesiumGlobe({
-
     position,
 
     satellites,
@@ -70,16 +46,9 @@ function CesiumGlobe({
     onSelect,
 
     onRegionSelect,
-
 }: Props) {
-
-
-
     return (
-
         <Viewer
-
-
             animation={false}
 
             timeline={false}
@@ -100,90 +69,43 @@ function CesiumGlobe({
 
             selectionIndicator={false}
 
-
-
             terrainProvider={undefined}
-
-
 
             requestRenderMode={false}
 
             maximumRenderTimeChange={Infinity}
 
-
-
             style={{
-
                 width: "100%",
 
                 height: "100vh",
-
             }}
-
-
         >
-
-
             <GlobeScene />
 
             <Stars />
 
             <Earth />
 
-
-
             <GlobeLayers
+                position={position}
 
-                position={
-                    position
-                }
+                satellites={satellites}
 
+                satelliteData={satelliteData}
 
-                satellites={
-                    satellites
-                }
+                highlightedIds={highlightedIds}
 
+                selectedNorad={selectedNorad}
 
-                satelliteData={
-                    satelliteData
-                }
+                selectedRegion={selectedRegion}
 
+                onSelect={onSelect}
 
-                highlightedIds={
-                    highlightedIds
-                }
-
-
-                selectedNorad={
-                    selectedNorad
-                }
-
-
-                selectedRegion={
-                    selectedRegion
-                }
-
-
-                onSelect={
-                    onSelect
-                }
-
-
-                onRegionSelect={
-                    onRegionSelect
-                }
-
+                onRegionSelect={onRegionSelect}
             />
-
-
         </Viewer>
-
     );
-
 }
 
-
-
-export default memo(
-    CesiumGlobe
-);
+export default memo(CesiumGlobe);

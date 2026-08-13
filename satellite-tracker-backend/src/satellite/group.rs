@@ -22,25 +22,15 @@ impl SatelliteGroup {
             Self::Starlink
         } else if name.contains("ONEWEB") {
             Self::OneWeb
-        } else if name.contains("ISS")
-            || name.contains("ZARYA")
-            || name.contains("ZVEZDA")
-        {
+        } else if name.contains("ISS") || name.contains("ZARYA") || name.contains("ZVEZDA") {
             Self::Iss
-        } else if name.contains("GPS")
-            || name.contains("NAVSTAR")
-        {
+        } else if name.contains("GPS") || name.contains("NAVSTAR") {
             Self::Gps
-        } else if name.contains("NOAA")
-            || name.contains("WEATHER")
-        {
+        } else if name.contains("NOAA") || name.contains("WEATHER") {
             Self::Weather
         } else if name.contains("IRIDIUM") {
             Self::Iridium
-        } else if name.contains("DEB")
-            || name.contains("R/B")
-            || name.contains("BODY")
-        {
+        } else if name.contains("DEB") || name.contains("R/B") || name.contains("BODY") {
             Self::Debris
         } else {
             Self::Other

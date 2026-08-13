@@ -2,53 +2,30 @@ import { useMemo } from "react";
 
 import { Entity } from "resium";
 
-import {
-    Color,
-} from "cesium";
+import { Color } from "cesium";
 
+import type { SatellitePosition } from "../../api";
 
-import type {
-    SatellitePosition,
-} from "../../api";
-
-
-import {
-    renderPosition,
-} from "./rendering";
-
+import { renderPosition } from "./rendering";
 
 interface Props {
     position: SatellitePosition;
 }
 
-
-export default function SelectedSatellite({
-    position,
-
-}: Props) {
-
-
-    const cesiumPosition =
-        useMemo(
-            () =>
-                renderPosition(
-                    position.longitude,
-                    position.latitude,
-                    position.altitude_km,
-                ),
-
-            [
+export default function SelectedSatellite({ position }: Props) {
+    const cesiumPosition = useMemo(
+        () =>
+            renderPosition(
                 position.longitude,
                 position.latitude,
                 position.altitude_km,
-            ]
-        );
+            ),
 
+        [position.longitude, position.latitude, position.altitude_km],
+    );
 
-
-    const description =
-        useMemo(
-            () => `
+    const description = useMemo(
+        () => `
 
 NORAD: ${position.norad_id}
 
@@ -66,47 +43,24 @@ ${position.velocity_km_s.toFixed(2)} km/s
 
             `,
 
-            [
-                position,
-            ]
-        );
-
-
+        [position],
+    );
 
     return (
-
         <Entity
-
-            position={
-                cesiumPosition
-            }
-
+            position={cesiumPosition}
 
             point={{
+                pixelSize: 18,
 
-                pixelSize:
-                    18,
+                color: Color.CYAN,
 
+                outlineColor: Color.WHITE,
 
-                color:
-                    Color.CYAN,
-
-
-                outlineColor:
-                    Color.WHITE,
-
-
-                outlineWidth:
-                    3,
-
+                outlineWidth: 3,
             }}
 
-
-            description={
-                description
-            }
-
+            description={description}
         />
-
     );
 }

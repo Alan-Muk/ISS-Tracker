@@ -1,7 +1,6 @@
+use crate::orbit::metadata::calculate_metadata;
 use crate::satellite::model::Satellite;
 use crate::tle::error::TleError;
-use crate::orbit::metadata::calculate_metadata;
-
 
 pub fn parse_tle(input: &str) -> Result<Vec<Satellite>, TleError> {
     if input.trim().is_empty() {
@@ -21,12 +20,7 @@ pub fn parse_tle(input: &str) -> Result<Vec<Satellite>, TleError> {
 
         let name = chunk[0].to_string();
 
-        let orbit = calculate_metadata(
-            &name,
-            chunk[1],
-            chunk[2],
-        )
-        .ok();
+        let orbit = calculate_metadata(&name, chunk[1], chunk[2]).ok();
 
         satellites.push(Satellite {
             norad_id,
@@ -35,9 +29,6 @@ pub fn parse_tle(input: &str) -> Result<Vec<Satellite>, TleError> {
             line2: chunk[2].to_string(),
             orbit,
         });
-
-
-
     }
 
     Ok(satellites)
@@ -113,41 +104,27 @@ ISS
 
     #[test]
     fn parses_real_station_catalog() {
-    let input = include_str!("../../data/active.tle");
+        let input = include_str!("../../data/active.tle");
 
-    let satellites = parse_tle(input).unwrap();
+        let satellites = parse_tle(input).unwrap();
 
-    assert!(!satellites.is_empty());
+        assert!(!satellites.is_empty());
 
-    assert!(satellites.iter().any(|sat| sat.norad_id == 25544));
+        assert!(satellites.iter().any(|sat| sat.norad_id == 25544));
     }
 }
 
 #[cfg(test)]
-    use crate::satellite::group::SatelliteGroup;
+use crate::satellite::group::SatelliteGroup;
 
-    #[test]
-    fn classifies_starlink() {
-        let input = "\
+#[test]
+fn classifies_starlink() {
+    let input = "\
 STARLINK-11533 [DTC]
 1 62836U TEST
 2 62836 TEST";
 
-        let sats = parse_tle(input).unwrap();
+    let sats = parse_tle(input).unwrap();
 
-        assert!(
-            matches!(
-                sats[0].group(),
-                SatelliteGroup::Starlink
-            )
-        );
-    }
-
-
-
-
-
-
-
-
-
+    assert!(matches!(sats[0].group(), SatelliteGroup::Starlink));
+}
